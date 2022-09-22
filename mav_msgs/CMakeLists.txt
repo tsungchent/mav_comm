@@ -44,4 +44,7 @@ install(
 )
 
 ament_export_dependencies(rosidl_default_runtime)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(geometry_msgs)
+
 ament_package()

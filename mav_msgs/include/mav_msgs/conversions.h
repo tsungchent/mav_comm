@@ -23,23 +23,23 @@
 #ifndef MAV_MSGS_CONVERSIONS_H
 #define MAV_MSGS_CONVERSIONS_H
 
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <geometry_msgs/Quaternion.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <geometry_msgs/Vector3.h>
-#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/msg/Point.hpp>
+#include <geometry_msgs/msg/PoseStamped.hpp>
+#include <geometry_msgs/msg/Quaternion.hpp>
+#include <geometry_msgs/msg/TransformStamped.hpp>
+#include <geometry_msgs/msg/Vector3.hpp>
+#include <nav_msgs/msgs/Odometry.hpp>
 #include <ros/ros.h>
-#include <trajectory_msgs/MultiDOFJointTrajectory.h>
+#include <trajectory_msgs/msg/MultiDOFJointTrajectory.hpp>
 
-#include "mav_msgs/Actuators.h"
-#include "mav_msgs/AttitudeThrust.h"
-#include "mav_msgs/RateThrust.h"
-#include "mav_msgs/RollPitchYawrateThrust.h"
-#include "mav_msgs/TorqueThrust.h"
-#include "mav_msgs/common.h"
-#include "mav_msgs/default_values.h"
-#include "mav_msgs/eigen_mav_msgs.h"
+#include "mav_msgs/msg/Actuators.hpp"
+#include "mav_msgs/msg/AttitudeThrust.hpp"
+#include "mav_msgs/msg/RateThrust.hpp"
+#include "mav_msgs/msg/RollPitchYawrateThrust.hpp"
+#include "mav_msgs/msg/TorqueThrust.hpp"
+#include "mav_msgs/common.hpp"
+#include "mav_msgs/default_values.hpp"
+#include "mav_msgs/eigen_mav_msgs.hpp"
 
 namespace mav_msgs {
 

@@ -19,13 +19,13 @@
 #ifndef MAV_PLANNING_MSGS_CONVERSIONS_H
 #define MAV_PLANNING_MSGS_CONVERSIONS_H
 
-#include <geometry_msgs/Point.h>
-#include <geometry_msgs/Quaternion.h>
-#include <geometry_msgs/Vector3.h>
+#include <geometry_msgs/msg/Point.h>
+#include <geometry_msgs/msg/Quaternion.h>
+#include <geometry_msgs/msg/Vector3.h>
 
-#include "mav_planning_msgs/PolynomialSegment.h"
-#include "mav_planning_msgs/PolynomialTrajectory.h"
-#include "mav_planning_msgs/eigen_planning_msgs.h"
+#include "mav_planning_msgs/msg/PolynomialSegment.h"
+#include "mav_planning_msgs/msg/PolynomialTrajectory.h"
+#include "mav_planning_msgs/msg/eigen_planning_msgs.h"
 
 // deprecated
 #include "mav_planning_msgs/conversions_deprecated.h"
