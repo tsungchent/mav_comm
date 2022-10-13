@@ -23,12 +23,16 @@
 #include <geometry_msgs/msg/Quaternion.h>
 #include <geometry_msgs/msg/Vector3.h>
 
-#include "mav_planning_msgs/msg/PolynomialSegment4D.h"
-#include "mav_planning_msgs/msg/PolynomialTrajectory4D.h"
+#include "mav_planning_msgs/msg/polynomial_segment4_d.h"
+#include "mav_planning_msgs/msg/polynomial_trajectory4_d.h"
 #include "mav_planning_msgs/eigen_planning_msgs.h"
 
+#include "mav_msgs/common.h"
+
 namespace mav_planning_msgs {
-  
+using PolynomialSegment4D = mav_planning_msgs::msg::PolynomialSegment4D;
+using PolynomialTrajectory4D = mav_planning_msgs::msg::PolynomialTrajectory4D;
+
 /// Converts a PolynomialSegment double array to an Eigen::VectorXd.
 inline void vectorFromMsgArray(const PolynomialSegment4D::_x_type& array,
                                Eigen::VectorXd* x);
@@ -47,7 +51,8 @@ inline void eigenPolynomialSegmentFromMsg(const PolynomialSegment4D& msg,
   vectorFromMsgArray(msg.z, &(segment->z));
   vectorFromMsgArray(msg.yaw, &(segment->yaw));
 
-  segment->segment_time_ns = msg.segment_time.toNSec();
+  segment->segment_time_ns = mav_msgs::toNSec(msg.segment_time);
+  // msg.segment_time.sec * 1000000000ull + msg.segment_time.nanosec;
   segment->num_coeffs = msg.num_coeffs;
 }
 
@@ -78,7 +83,7 @@ inline void polynomialSegmentMsgFromEigen(const EigenPolynomialSegment& segment,
   msgArrayFromVector(segment.z, &(msg->z));
   msgArrayFromVector(segment.yaw, &(msg->yaw));
 
-  msg->segment_time.fromNSec(segment.segment_time_ns);
+  mav_msgs::fromNSec(segment.segment_time_ns, msg->segment_time);
   msg->num_coeffs = segment.num_coeffs;
 }
 

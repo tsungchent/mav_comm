@@ -19,18 +19,22 @@
 #ifndef MAV_PLANNING_MSGS_CONVERSIONS_H
 #define MAV_PLANNING_MSGS_CONVERSIONS_H
 
-#include <geometry_msgs/msg/Point.h>
-#include <geometry_msgs/msg/Quaternion.h>
-#include <geometry_msgs/msg/Vector3.h>
+#include <geometry_msgs/msg/point.h>
+#include <geometry_msgs/msg/quaternion.h>
+#include <geometry_msgs/msg/vector3.h>
 
-#include "mav_planning_msgs/msg/PolynomialSegment.h"
-#include "mav_planning_msgs/msg/PolynomialTrajectory.h"
-#include "mav_planning_msgs/msg/eigen_planning_msgs.h"
+#include "mav_planning_msgs/msg/polynomial_segment.h"
+#include "mav_planning_msgs/msg/polynomial_trajectory.h"
+#include "mav_planning_msgs/eigen_planning_msgs.h"
 
 // deprecated
 #include "mav_planning_msgs/conversions_deprecated.h"
+#include "mav_msgs/common.h"
 
 namespace mav_planning_msgs {
+
+using PolynomialSegment = mav_planning_msgs::msg::PolynomialSegment;
+using PolynomialTrajectory = mav_planning_msgs::msg::PolynomialTrajectory;
 
 /// Converts a PolynomialSegment double array to an Eigen::VectorXd.
 inline void vectorFromMsgArray(const PolynomialSegment::_x_type& array,
@@ -60,7 +64,8 @@ inline void eigenPolynomialSegmentFromMsg(const PolynomialSegment& msg,
   vectorFromMsgArray(msg.ry, &(segment->ry));
   vectorFromMsgArray(msg.rz, &(segment->rz));
 
-  segment->segment_time_ns = msg.segment_time.toNSec();
+  segment->segment_time_ns = mav_msgs::toNSec(msg.segment_time);
+  // msg.segment_time.sec * 1000000000ull + msg.segment_time.nanosec; // msg.segment_time.toNSec();
   segment->num_coeffs = msg.num_coeffs;
 }
 
@@ -93,7 +98,8 @@ inline void polynomialSegmentMsgFromEigen(const EigenPolynomialSegment& segment,
   msgArrayFromVector(segment.ry, &(msg->ry));
   msgArrayFromVector(segment.rz, &(msg->rz));
 
-  msg->segment_time.fromNSec(segment.segment_time_ns);
+  // msg->segment_time.fromNSec(segment.segment_time_ns);
+  mav_msgs::fromNSec(segment.segment_time_ns, msg->segment_time);
   msg->num_coeffs = segment.num_coeffs;
 }
 

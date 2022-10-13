@@ -23,25 +23,35 @@
 #ifndef MAV_MSGS_CONVERSIONS_H
 #define MAV_MSGS_CONVERSIONS_H
 
-#include <geometry_msgs/msg/Point.hpp>
-#include <geometry_msgs/msg/PoseStamped.hpp>
-#include <geometry_msgs/msg/Quaternion.hpp>
-#include <geometry_msgs/msg/TransformStamped.hpp>
-#include <geometry_msgs/msg/Vector3.hpp>
-#include <nav_msgs/msgs/Odometry.hpp>
-#include <ros/ros.h>
-#include <trajectory_msgs/msg/MultiDOFJointTrajectory.hpp>
+#include <geometry_msgs/msg/point.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+// #include <ros/ros.h>
+#include <rclcpp/time.hpp>
+#include <trajectory_msgs/msg/multi_dof_joint_trajectory.hpp>
 
-#include "mav_msgs/msg/Actuators.hpp"
-#include "mav_msgs/msg/AttitudeThrust.hpp"
-#include "mav_msgs/msg/RateThrust.hpp"
-#include "mav_msgs/msg/RollPitchYawrateThrust.hpp"
-#include "mav_msgs/msg/TorqueThrust.hpp"
-#include "mav_msgs/common.hpp"
-#include "mav_msgs/default_values.hpp"
-#include "mav_msgs/eigen_mav_msgs.hpp"
+#include "mav_msgs/msg/actuators.hpp"
+#include "mav_msgs/msg/attitude_thrust.hpp"
+#include "mav_msgs/msg/rate_thrust.hpp"
+#include "mav_msgs/msg/roll_pitch_yawrate_thrust.hpp"
+#include "mav_msgs/msg/torque_thrust.hpp"
+#include "mav_msgs/common.h"
+#include "mav_msgs/default_values.h"
+#include "mav_msgs/eigen_mav_msgs.h"
+
+#include <rclcpp/rclcpp.hpp>
 
 namespace mav_msgs {
+
+using AttitudeThrust = mav_msgs::msg::AttitudeThrust;
+using Actuators = mav_msgs::msg::Actuators;
+using RateThrust = mav_msgs::msg::RateThrust;
+using TorqueThrust = mav_msgs::msg::TorqueThrust;
+using RollPitchYawrateThrust = mav_msgs::msg::RollPitchYawrateThrust;
+
 
 inline void eigenAttitudeThrustFromMsg(const AttitudeThrust& msg,
                                        EigenAttitudeThrust* attitude_thrust) {
@@ -102,10 +112,10 @@ inline void eigenRollPitchYawrateThrustFromMsg(
   roll_pitch_yawrate_thrust->thrust = vector3FromMsg(msg.thrust);
 }
 
-inline void eigenOdometryFromMsg(const nav_msgs::Odometry& msg,
+inline void eigenOdometryFromMsg(const nav_msgs::msg::Odometry& msg,
                                  EigenOdometry* odometry) {
   assert(odometry != NULL);
-  odometry->timestamp_ns = msg.header.stamp.toNSec();
+  odometry->timestamp_ns =  mav_msgs::toNSec(msg.header.stamp); // msg.header.stamp.toNSec();
   odometry->position_W = mav_msgs::vector3FromPointMsg(msg.pose.pose.position);
   odometry->orientation_W_B =
       mav_msgs::quaternionFromMsg(msg.pose.pose.orientation);
@@ -119,13 +129,13 @@ inline void eigenOdometryFromMsg(const nav_msgs::Odometry& msg,
 }
 
 inline void eigenTrajectoryPointFromTransformMsg(
-    const geometry_msgs::TransformStamped& msg,
+    const geometry_msgs::msg::TransformStamped& msg,
     EigenTrajectoryPoint* trajectory_point) {
   assert(trajectory_point != NULL);
 
-  ros::Time timestamp = msg.header.stamp;
+  rclcpp::Time timestamp = msg.header.stamp;
 
-  trajectory_point->timestamp_ns = timestamp.toNSec();
+  trajectory_point->timestamp_ns = timestamp.nanoseconds();
   trajectory_point->position_W = vector3FromMsg(msg.transform.translation);
   trajectory_point->orientation_W_B = quaternionFromMsg(msg.transform.rotation);
   trajectory_point->velocity_W.setZero();
@@ -140,7 +150,7 @@ inline void eigenTrajectoryPointFromTransformMsg(
 // correctly and should be used if at all possible), and one for a raw pose
 // message.
 inline void eigenTrajectoryPointFromPoseMsg(
-    const geometry_msgs::Pose& msg, EigenTrajectoryPoint* trajectory_point) {
+    const geometry_msgs::msg::Pose& msg, EigenTrajectoryPoint* trajectory_point) {
   assert(trajectory_point != NULL);
 
   trajectory_point->position_W = vector3FromPointMsg(msg.position);
@@ -154,13 +164,13 @@ inline void eigenTrajectoryPointFromPoseMsg(
 }
 
 inline void eigenTrajectoryPointFromPoseMsg(
-    const geometry_msgs::PoseStamped& msg,
+    const geometry_msgs::msg::PoseStamped& msg,
     EigenTrajectoryPoint* trajectory_point) {
   assert(trajectory_point != NULL);
 
-  ros::Time timestamp = msg.header.stamp;
+  rclcpp::Time timestamp = msg.header.stamp;
 
-  trajectory_point->timestamp_ns = timestamp.toNSec();
+  trajectory_point->timestamp_ns = timestamp.nanoseconds();
   eigenTrajectoryPointFromPoseMsg(msg.pose, trajectory_point);
 }
 
@@ -324,23 +334,23 @@ inline void EigenMavStateFromEigenTrajectoryPoint(
 }
 
 inline void eigenTrajectoryPointFromMsg(
-    const trajectory_msgs::MultiDOFJointTrajectoryPoint& msg,
+    const trajectory_msgs::msg::MultiDOFJointTrajectoryPoint& msg,
     EigenTrajectoryPoint* trajectory_point) {
   assert(trajectory_point != NULL);
 
   if (msg.transforms.empty()) {
-    ROS_ERROR("MultiDofJointTrajectoryPoint is empty.");
+    RCLCPP_ERROR(rclcpp::get_logger(""), "MultiDofJointTrajectoryPoint is empty.");
     return;
   }
 
   if (msg.transforms.size() > 1) {
-    ROS_WARN(
+    RCLCPP_WARN(rclcpp::get_logger(""), 
         "MultiDofJointTrajectoryPoint message should have one joint, but has "
         "%lu. Using first joint.",
         msg.transforms.size());
   }
 
-  trajectory_point->time_from_start_ns = msg.time_from_start.toNSec();
+  trajectory_point->time_from_start_ns = toNSec(msg.time_from_start); // msg.time_from_start.toNSec();
   trajectory_point->position_W = vector3FromMsg(msg.transforms[0].translation);
   trajectory_point->orientation_W_B =
       quaternionFromMsg(msg.transforms[0].rotation);
@@ -366,7 +376,7 @@ inline void eigenTrajectoryPointFromMsg(
 }
 
 inline void eigenTrajectoryPointVectorFromMsg(
-    const trajectory_msgs::MultiDOFJointTrajectory& msg,
+    const trajectory_msgs::msg::MultiDOFJointTrajectory& msg,
     EigenTrajectoryPointVector* trajectory) {
   assert(trajectory != NULL);
   trajectory->clear();
@@ -378,7 +388,7 @@ inline void eigenTrajectoryPointVectorFromMsg(
 }
 
 inline void eigenTrajectoryPointDequeFromMsg(
-    const trajectory_msgs::MultiDOFJointTrajectory& msg,
+    const trajectory_msgs::msg::MultiDOFJointTrajectory& msg,
     EigenTrajectoryPointDeque* trajectory) {
   assert(trajectory != NULL);
   trajectory->clear();
@@ -443,11 +453,12 @@ inline void msgRollPitchYawrateThrustFromEigen(
 }
 
 inline void msgOdometryFromEigen(const EigenOdometry& odometry,
-                                 nav_msgs::Odometry* msg) {
+                                 nav_msgs::msg::Odometry* msg) {
   assert(msg != NULL);
 
   if (odometry.timestamp_ns >= 0) {
-    msg->header.stamp.fromNSec(odometry.timestamp_ns);
+    // msg->header.stamp.fromNSec(odometry.timestamp_ns);
+    fromNSec(odometry.timestamp_ns, msg->header.stamp);
   }
   pointEigenToMsg(odometry.position_W, &msg->pose.pose.position);
   quaternionEigenToMsg(odometry.orientation_W_B, &msg->pose.pose.orientation);
@@ -459,9 +470,10 @@ inline void msgOdometryFromEigen(const EigenOdometry& odometry,
 // WARNING: discards all derivatives, etc.
 inline void msgPoseStampedFromEigenTrajectoryPoint(
     const EigenTrajectoryPoint& trajectory_point,
-    geometry_msgs::PoseStamped* msg) {
+    geometry_msgs::msg::PoseStamped* msg) {
   if (trajectory_point.timestamp_ns >= 0) {
-    msg->header.stamp.fromNSec(trajectory_point.timestamp_ns);
+    // msg->header.stamp.fromNSec(trajectory_point.timestamp_ns);
+    fromNSec(trajectory_point.timestamp_ns, msg->header.stamp);
   }
   pointEigenToMsg(trajectory_point.position_W, &msg->pose.position);
   quaternionEigenToMsg(trajectory_point.orientation_W_B,
@@ -470,10 +482,11 @@ inline void msgPoseStampedFromEigenTrajectoryPoint(
 
 inline void msgMultiDofJointTrajectoryPointFromEigen(
     const EigenTrajectoryPoint& trajectory_point,
-    trajectory_msgs::MultiDOFJointTrajectoryPoint* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectoryPoint* msg) {
   assert(msg != NULL);
 
-  msg->time_from_start.fromNSec(trajectory_point.time_from_start_ns);
+  // msg->time_from_start.fromNSec(trajectory_point.time_from_start_ns);
+  fromNSec(trajectory_point.time_from_start_ns, msg->time_from_start);
   msg->transforms.resize(1);
   msg->velocities.resize(1);
   msg->accelerations.resize(1);
@@ -493,9 +506,9 @@ inline void msgMultiDofJointTrajectoryPointFromEigen(
 
 inline void msgMultiDofJointTrajectoryFromEigen(
     const EigenTrajectoryPoint& trajectory_point, const std::string& link_name,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   assert(msg != NULL);
-  trajectory_msgs::MultiDOFJointTrajectoryPoint point_msg;
+  trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point_msg;
   msgMultiDofJointTrajectoryPointFromEigen(trajectory_point, &point_msg);
 
   msg->joint_names.clear();
@@ -506,14 +519,14 @@ inline void msgMultiDofJointTrajectoryFromEigen(
 
 inline void msgMultiDofJointTrajectoryFromEigen(
     const EigenTrajectoryPoint& trajectory_point,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   msgMultiDofJointTrajectoryFromEigen(trajectory_point, "base_link", msg);
 }
 
 // Convenience method to quickly create a trajectory from a single waypoint.
 inline void msgMultiDofJointTrajectoryFromPositionYaw(
     const Eigen::Vector3d& position, double yaw,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   assert(msg != NULL);
 
   EigenTrajectoryPoint point;
@@ -525,11 +538,11 @@ inline void msgMultiDofJointTrajectoryFromPositionYaw(
 
 inline void msgMultiDofJointTrajectoryFromEigen(
     const EigenTrajectoryPointVector& trajectory, const std::string& link_name,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   assert(msg != NULL);
 
   if (trajectory.empty()) {
-    ROS_ERROR("EigenTrajectoryPointVector is empty.");
+    RCLCPP_ERROR(rclcpp::get_logger(""), "EigenTrajectoryPointVector is empty.");
     return;
   }
 
@@ -538,7 +551,7 @@ inline void msgMultiDofJointTrajectoryFromEigen(
   msg->points.clear();
 
   for (const auto& trajectory_point : trajectory) {
-    trajectory_msgs::MultiDOFJointTrajectoryPoint point_msg;
+    trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point_msg;
     msgMultiDofJointTrajectoryPointFromEigen(trajectory_point, &point_msg);
     msg->points.push_back(point_msg);
   }
@@ -546,17 +559,17 @@ inline void msgMultiDofJointTrajectoryFromEigen(
 
 inline void msgMultiDofJointTrajectoryFromEigen(
     const EigenTrajectoryPointVector& trajectory,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   msgMultiDofJointTrajectoryFromEigen(trajectory, "base_link", msg);
 }
 
 inline void msgMultiDofJointTrajectoryFromEigen(
     const EigenTrajectoryPointDeque& trajectory, const std::string& link_name,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   assert(msg != NULL);
 
   if (trajectory.empty()) {
-    ROS_ERROR("EigenTrajectoryPointVector is empty.");
+    RCLCPP_ERROR(rclcpp::get_logger(""), "EigenTrajectoryPointVector is empty.");
     return;
   }
 
@@ -565,7 +578,7 @@ inline void msgMultiDofJointTrajectoryFromEigen(
   msg->points.clear();
 
   for (const auto& trajectory_point : trajectory) {
-    trajectory_msgs::MultiDOFJointTrajectoryPoint point_msg;
+    trajectory_msgs::msg::MultiDOFJointTrajectoryPoint point_msg;
     msgMultiDofJointTrajectoryPointFromEigen(trajectory_point, &point_msg);
     msg->points.push_back(point_msg);
   }
@@ -573,7 +586,7 @@ inline void msgMultiDofJointTrajectoryFromEigen(
 
 inline void msgMultiDofJointTrajectoryFromEigen(
     const EigenTrajectoryPointDeque& trajectory,
-    trajectory_msgs::MultiDOFJointTrajectory* msg) {
+    trajectory_msgs::msg::MultiDOFJointTrajectory* msg) {
   msgMultiDofJointTrajectoryFromEigen(trajectory, "base_link", msg);
 }
 

@@ -7,7 +7,7 @@ find_package(eigen_vendor REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
-
+# find_package(rosidl_default_generatorss REQUIRED)
 find_package(Eigen3 QUIET)
 
 if(NOT EIGEN3_FOUND)
@@ -37,14 +37,21 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   ADD_LINTER_TESTS
 )
 
+# install(TARGETS
+#  ${PROJECT_NAME} EXPORT ${PROJECT_NAME}
+#  ARCHIVE DESTINATION lib
+#  LIBRARY DESTINATION lib
+#  RUNTIME DESTINATION bin)
+
 install(
   DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include
   FILES_MATCHING PATTERN "*.h"
 )
 
-ament_export_dependencies(rosidl_default_runtime)
-ament_export_dependencies(std_msgs)
-ament_export_dependencies(geometry_msgs)
+# ament_export_dependencies(${PROJECT_NAME})
+# ament_export_dependencies(rosidl_default_runtime)
+# ament_export_dependencies(std_msgs)
+# ament_export_dependencies(geometry_msgs)
 
 ament_package()

@@ -29,10 +29,26 @@
 #include <Eigen/Geometry>
 #include <boost/algorithm/clamp.hpp>
 
+#include <iostream>
 namespace mav_msgs {
 
 const double kSmallValueCheck = 1.e-6;
 const double kNumNanosecondsPerSecond = 1.e9;
+
+constexpr uint64_t sec_2_nano = 1000000000ull;
+
+template<typename time_type>
+inline time_type fromNSec(uint64_t nanosec, time_type &seg_time) {
+    seg_time.sec = nanosec / sec_2_nano;
+    seg_time.nanosec = nanosec % sec_2_nano;
+    return seg_time; 
+}
+
+template<typename time_type>
+inline uint64_t toNSec(const time_type& seg_time){
+    return seg_time.nanosec + seg_time.sec * sec_2_nano;
+}
+
 
 /// Magnitude of Earth's gravitational field at specific height [m] and latitude
 /// [rad] (from wikipedia).
@@ -52,16 +68,16 @@ inline double MagnitudeOfGravity(const double height,
                        kGravity_c * height);
 }
 
-inline Eigen::Vector3d vector3FromMsg(const geometry_msgs::Vector3& msg) {
+inline Eigen::Vector3d vector3FromMsg(const geometry_msgs::msg::Vector3& msg) {
   return Eigen::Vector3d(msg.x, msg.y, msg.z);
 }
 
-inline Eigen::Vector3d vector3FromPointMsg(const geometry_msgs::Point& msg) {
+inline Eigen::Vector3d vector3FromPointMsg(const geometry_msgs::msg::Point& msg) {
   return Eigen::Vector3d(msg.x, msg.y, msg.z);
 }
 
 inline Eigen::Quaterniond quaternionFromMsg(
-    const geometry_msgs::Quaternion& msg) {
+    const geometry_msgs::msg::Quaternion& msg) {
   // Make sure this always returns a valid Quaternion, even if the message was
   // uninitialized or only approximately set.
   Eigen::Quaterniond quaternion(msg.w, msg.x, msg.y, msg.z);
@@ -74,7 +90,7 @@ inline Eigen::Quaterniond quaternionFromMsg(
 }
 
 inline void vectorEigenToMsg(const Eigen::Vector3d& eigen,
-                             geometry_msgs::Vector3* msg) {
+                             geometry_msgs::msg::Vector3* msg) {
   assert(msg != NULL);
   msg->x = eigen.x();
   msg->y = eigen.y();
@@ -82,7 +98,7 @@ inline void vectorEigenToMsg(const Eigen::Vector3d& eigen,
 }
 
 inline void pointEigenToMsg(const Eigen::Vector3d& eigen,
-                            geometry_msgs::Point* msg) {
+                            geometry_msgs::msg::Point* msg) {
   assert(msg != NULL);
   msg->x = eigen.x();
   msg->y = eigen.y();
@@ -90,7 +106,7 @@ inline void pointEigenToMsg(const Eigen::Vector3d& eigen,
 }
 
 inline void quaternionEigenToMsg(const Eigen::Quaterniond& eigen,
-                                 geometry_msgs::Quaternion* msg) {
+                                 geometry_msgs::msg::Quaternion* msg) {
   assert(msg != NULL);
   msg->x = eigen.x();
   msg->y = eigen.y();
@@ -114,7 +130,7 @@ inline Eigen::Quaterniond quaternionFromYaw(double yaw) {
 }
 
 inline void setQuaternionMsgFromYaw(double yaw,
-                                    geometry_msgs::Quaternion* msg) {
+                                    geometry_msgs::msg::Quaternion* msg) {
   assert(msg != NULL);
   Eigen::Quaterniond q_yaw = quaternionFromYaw(yaw);
   msg->x = q_yaw.x();
@@ -124,7 +140,7 @@ inline void setQuaternionMsgFromYaw(double yaw,
 }
 
 inline void setAngularVelocityMsgFromYawRate(double yaw_rate,
-                                             geometry_msgs::Vector3* msg) {
+                                             geometry_msgs::msg::Vector3* msg) {
   assert(msg != NULL);
   msg->x = 0.0;
   msg->y = 0.0;

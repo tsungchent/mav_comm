@@ -25,10 +25,10 @@
   <buildtool_depend>ament</buildtool_depend>
 
   <!-- Dependencies needed after this package is compiled. -->
-  <run_depend>mav_msgs</run_depend>
-  <run_depend>mav_planning_msgs</run_depend>
-  <run_depend>mav_state_machine_msgs</run_depend>
-  <run_depend>mav_system_msgs</run_depend>
+  <exec_depend>mav_msgs</exec_depend>
+  <exec_depend>mav_planning_msgs</exec_depend>
+  <exec_depend>mav_state_machine_msgs</exec_depend>
+  <exec_depend>mav_system_msgs</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
